@@ -30,5 +30,9 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
           ),
         ),
+        navigationBarTheme: const NavigationBarThemeData(
+          backgroundColor: Colors.white,
+          indicatorColor: Color(0xFFE3F1E5),
+        ),
       );
 }
