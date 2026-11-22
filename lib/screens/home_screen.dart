@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/date_utils.dart';
+import 'habit_form_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -14,14 +15,16 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.accent,
-        foregroundColor: AppColors.text,
-        // Sementara: tombol uji. Nanti diganti layar form.
-        onPressed: () => context
-            .read<HabitProvider>()
-            .addHabit('Kebiasaan ${habits.length + 1}'),
-        child: const Icon(Icons.add),
+      backgroundColor: AppColors.accent,
+      foregroundColor: AppColors.text,
+      onPressed: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const HabitFormScreen(),
+        ),
       ),
+      child: const Icon(Icons.add),
+    ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -44,7 +47,7 @@ class HomeScreen extends StatelessWidget {
                       margin: const EdgeInsets.only(bottom: 10),
                       child: ListTile(
                         leading:
-                            const Icon(Icons.eco, color: AppColors.primary),
+                            Icon(Icons.eco, color: Color(h.colorValue)),
                         title: Text(h.name),
                         subtitle: Text('Streak ${currentStreak(h)} hari'),
                         trailing: IconButton(
