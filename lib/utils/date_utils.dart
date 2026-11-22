@@ -34,3 +34,24 @@ int longestStreak(Habit h) {
   }
   return longest;
 }
+
+const dayNames = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+
+/// Daftar [n] tanggal terakhir, dari yang terlama sampai hari ini.
+List<DateTime> lastDays(int n) {
+  final now = DateTime.now();
+  return [for (var i = n - 1; i >= 0; i--) now.subtract(Duration(days: i))];
+}
+
+/// Berapa hari kebiasaan ini selesai dalam [n] hari terakhir.
+int doneInLastDays(Habit h, int n) =>
+    lastDays(n).where((d) => h.doneDates.contains(dateKey(d))).length;
+
+/// Sapaan sesuai jam.
+String greeting() {
+  final hour = DateTime.now().hour;
+  if (hour < 11) return 'Selamat pagi!';
+  if (hour < 15) return 'Selamat siang!';
+  if (hour < 18) return 'Selamat sore!';
+  return 'Selamat malam!';
+}
