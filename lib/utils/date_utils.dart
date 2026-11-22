@@ -17,3 +17,20 @@ int currentStreak(Habit h) {
   }
   return count;
 }
+
+int longestStreak(Habit h) {
+  if (h.doneDates.isEmpty) return 0;
+  final dates = h.doneDates.map(DateTime.parse).toList()..sort();
+  var longest = 1;
+  var run = 1;
+  for (var i = 1; i < dates.length; i++) {
+    final gap = dates[i].difference(dates[i - 1]).inDays;
+    if (gap == 1) {
+      run++;
+    } else {
+      run = 1;
+    }
+    if (run > longest) longest = run;
+  }
+  return longest;
+}
