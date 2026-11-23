@@ -55,3 +55,12 @@ String greeting() {
   if (hour < 18) return 'Selamat sore!';
   return 'Selamat malam!';
 }
+
+const monthNames = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+];
+
+/// Jumlah hari dalam bulan tertentu (otomatis benar untuk Februari/kabisat).
+/// Trik: hari ke-0 bulan berikutnya = hari terakhir bulan ini.
+int daysInMonth(int year, int month) => DateTime(year, month + 1, 0).day;

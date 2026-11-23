@@ -145,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Kebunmu tumbuh',
+                      const Text('Progress hari ini',
                           style: TextStyle(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 4),
                       Text(
@@ -215,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             }
                           },
                           leading:
-                              Icon(Icons.eco, color: Color(h.colorValue)),
+                              CircleAvatar(radius: 10, backgroundColor: Color(h.colorValue)),
                           title: Text(h.name),
                           subtitle: Text('Streak ${currentStreak(h)} hari'),
                           trailing: IconButton(

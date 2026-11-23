@@ -1,17 +1,13 @@
-import 'package:flutter/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 import 'providers/habit_provider.dart';
-import 'screens/main_shell.dart';
+import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final provider = HabitProvider();
-  await provider.load();
+void main() {
   runApp(
-    ChangeNotifierProvider.value(
-      value: provider,
+    ChangeNotifierProvider(
+      create: (_) => HabitProvider(),
       child: const RoutimeApp(),
     ),
   );
@@ -26,7 +22,7 @@ class RoutimeApp extends StatelessWidget {
       title: 'Routime',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const MainShell(),
+      home: const SplashScreen(),
     );
   }
 }
