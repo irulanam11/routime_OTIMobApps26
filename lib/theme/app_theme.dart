@@ -11,6 +11,7 @@ class AppColors {
 class AppTheme {
   static ThemeData get light => ThemeData(
         useMaterial3: true,
+        fontFamily: 'Poppins',
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppColors.primary,
           primary: AppColors.primary,
@@ -27,7 +28,9 @@ class AppTheme {
           color: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.all(
+              Radius.circular(16),
+            ),
           ),
         ),
         navigationBarTheme: const NavigationBarThemeData(
