@@ -9,6 +9,7 @@ import '../widgets/confirm_delete_dialog.dart';
 import '../widgets/progress_ring.dart';
 import 'habit_detail_screen.dart';
 import 'habit_form_screen.dart';
+import '../providers/timer_provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -95,10 +96,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
                   onPressed: () async {
-                    final provider = context.read<HabitProvider>();
-                    final confirmed =
-                        await confirmDeleteHabit(context, selected.name);
-                    if (confirmed) provider.deleteHabit(selected.id);
+                    final habitProvider = context.read<HabitProvider>();
+                    final timerProvider = context.read<TimerProvider>();
+
+                    final confirmed = await confirmDeleteHabit(
+                      context,
+                      selected.name,
+                    );
+
+                    if (!confirmed || !context.mounted) return;
+
+                    await habitProvider.deleteHabit(
+                      selected.id,
+                      timerProvider,
+                    );
                   },
                 ),
               ],
@@ -191,8 +202,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       confirmDismiss: (_) =>
                           confirmDeleteHabit(context, h.name),
-                      onDismissed: (_) =>
-                          context.read<HabitProvider>().deleteHabit(h.id),
+                      onDismissed: (_) async {
+                        final habitProvider = context.read<HabitProvider>();
+                        final timerProvider = context.read<TimerProvider>();
+
+                        await habitProvider.deleteHabit(
+                          h.id,
+                          timerProvider,
+                        );
+                      },
                       child: Card(
                         margin: const EdgeInsets.only(bottom: 10),
                         child: ListTile(

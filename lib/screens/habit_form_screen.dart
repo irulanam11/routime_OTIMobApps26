@@ -21,6 +21,8 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
 
   // Warna yang sedang dipilih (awalnya hijau)
   int _selectedColor = 0xFF2F7D4F;
+  // Menentukan apakah timer digunakan
+  bool _useTimer = false;
 
   // Daftar pilihan warna
   static const _colors = [
@@ -39,16 +41,15 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
 
   // Dijalankan saat tombol Simpan ditekan
   void _save() {
-    // Jika nama kosong, berhenti dan tampilkan pesan error
-    if (!_formKey.currentState!.validate()) return;
+  if (!_formKey.currentState!.validate()) return;
 
-    // Kirim data ke provider
-    context
-        .read<HabitProvider>()
-        .addHabit(_nameController.text, colorValue: _selectedColor);
+  context.read<HabitProvider>().addHabit(
+    _nameController.text,
+    colorValue: _selectedColor,
+    useTimer: _useTimer,
+  );
 
-    // Tutup layar form, kembali ke Home
-    Navigator.pop(context);
+  Navigator.pop(context);
   }
 
   @override
@@ -109,7 +110,25 @@ class _HabitFormScreenState extends State<HabitFormScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // 3. Tombol simpan
+                const SizedBox(height: 24),
+                // 3. Penggunaan timer
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Gunakan Timer'),
+                  subtitle: const Text(
+                    'Aktifkan timer untuk membantu mengatur waktu kebiasaan.',
+                  ),
+                  value: _useTimer,
+                  onChanged: (value) {
+                    setState(() {
+                      _useTimer = value;
+                    });
+                  },
+                ),
+
+                const SizedBox(height: 24),
+
+                // 4. Tombol simpan
                 SizedBox(
                   width: double.infinity,
                   height: 52,

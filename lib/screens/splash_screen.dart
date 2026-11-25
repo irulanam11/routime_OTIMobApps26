@@ -1,8 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
+
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
 import 'main_shell.dart';
+import '../providers/timer_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -19,22 +21,35 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _start() async {
-    final provider = context.read<HabitProvider>();
+    final habitProvider = context.read<HabitProvider>();
+    final timerProvider = context.read<TimerProvider>();
 
-    // Muat data DAN tunggu minimal 1,8 detik, mana yang lebih lama
+    // Muat data Habit dan tunggu minimal 1,8 detik.
     await Future.wait([
-      provider.load(),
+      habitProvider.load(),
       Future.delayed(const Duration(milliseconds: 1800)),
     ]);
 
-    // Jika layar sudah ditutup selama menunggu, berhenti
+    // Jika layar sudah ditutup selama menunggu, berhenti.
+    if (!mounted) return;
+
+    // Periksa apakah Habit pemilik Timer masih tersedia.
+    final timerOwnerExists = habitProvider.habits.any(
+      (habit) => habit.id == timerProvider.habitId,
+    );
+
+    // Bersihkan Timer jika Habit pemiliknya sudah tidak tersedia.
+    if (timerProvider.hasTimer && !timerOwnerExists) {
+      await timerProvider.clear();
+    }
+
     if (!mounted) return;
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (_, __, ___) => const MainShell(),
-        transitionsBuilder: (_, animation, __, child) =>
+        pageBuilder: (_, _, _) => const MainShell(),
+        transitionsBuilder: (_, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
       ),
     );
@@ -63,8 +78,11 @@ class _SplashScreenState extends State<SplashScreen> {
                   color: Colors.white,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check_rounded,
-                    size: 56, color: AppColors.primary),
+                child: const Icon(
+                  Icons.check_rounded,
+                  size: 56,
+                  color: AppColors.primary,
+                ),
               ),
               const SizedBox(height: 24),
               const Text(

@@ -6,6 +6,8 @@ import '../theme/app_theme.dart';
 import '../utils/date_utils.dart';
 import '../utils/responsive.dart';
 import '../widgets/confirm_delete_dialog.dart';
+import '../widgets/timer_widget.dart';
+import '../providers/timer_provider.dart';
 
 /// Layar Detail penuh (dipakai di HP).
 class HabitDetailScreen extends StatelessWidget {
@@ -29,14 +31,24 @@ class HabitDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.delete_outline),
             onPressed: () async {
-              final provider = context.read<HabitProvider>();
-              final navigator = Navigator.of(context);
+              final habitProvider = context.read<HabitProvider>();
+              final timerProvider = context.read<TimerProvider>();
 
-              final confirmed = await confirmDeleteHabit(context, habit.name);
-              if (!confirmed) return;
+              final confirmed = await confirmDeleteHabit(
+                context,
+                habit.name,
+              );
 
-              navigator.pop();
-              provider.deleteHabit(habit.id);
+              if (!confirmed || !context.mounted) return;
+
+              await habitProvider.deleteHabit(
+                habit.id,
+                timerProvider,
+              );
+
+              if (!context.mounted) return;
+
+              Navigator.of(context).pop();
             },
           ),
         ],
@@ -82,6 +94,10 @@ class HabitDetailContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (habit.useTimer) ...[
+          TimerWidget(habit: habit),
+          const SizedBox(height: 24),
+        ],
         Row(
           children: [
             Expanded(
