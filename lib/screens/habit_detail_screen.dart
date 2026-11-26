@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
+
 import '../models/habit.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
@@ -8,10 +9,11 @@ import '../utils/responsive.dart';
 import '../widgets/confirm_delete_dialog.dart';
 import '../widgets/timer_widget.dart';
 import '../providers/timer_provider.dart';
+import 'habit_form_screen.dart';
 
-/// Layar Detail penuh (dipakai di HP).
 class HabitDetailScreen extends StatelessWidget {
   final String habitId;
+
   const HabitDetailScreen({super.key, required this.habitId});
 
   @override
@@ -29,22 +31,29 @@ class HabitDetailScreen extends StatelessWidget {
         title: Text(habit.name),
         actions: [
           IconButton(
+            tooltip: 'Edit kebiasaan',
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => HabitFormScreen(habit: habit),
+                ),
+              );
+            },
+          ),
+          IconButton(
+            tooltip: 'Hapus kebiasaan',
             icon: const Icon(Icons.delete_outline),
             onPressed: () async {
               final habitProvider = context.read<HabitProvider>();
               final timerProvider = context.read<TimerProvider>();
 
-              final confirmed = await confirmDeleteHabit(
-                context,
-                habit.name,
-              );
+              final confirmed = await confirmDeleteHabit(context, habit.name);
 
               if (!confirmed || !context.mounted) return;
 
-              await habitProvider.deleteHabit(
-                habit.id,
-                timerProvider,
-              );
+              await habitProvider.deleteHabit(habit.id, timerProvider);
 
               if (!context.mounted) return;
 
@@ -65,9 +74,9 @@ class HabitDetailScreen extends StatelessWidget {
   }
 }
 
-/// Isi detail (streak + kalender bulan ini), tanpa Scaffold.
 class HabitDetailContent extends StatelessWidget {
   final Habit habit;
+
   const HabitDetailContent({super.key, required this.habit});
 
   @override
@@ -75,29 +84,41 @@ class HabitDetailContent extends StatelessWidget {
     final color = Color(habit.colorValue);
     final now = DateTime.now();
     final totalDays = daysInMonth(now.year, now.month);
-
-    // Berapa kotak kosong sebelum tanggal 1 (Senin = 0, ... Minggu = 6)
     final offset = DateTime(now.year, now.month, 1).weekday - 1;
 
-    bool isDone(int day) => habit.doneDates
-        .contains(dateKey(DateTime(now.year, now.month, day)));
+    bool isDone(int day) =>
+        habit.doneDates.contains(dateKey(DateTime(now.year, now.month, day)));
 
     var doneCount = 0;
+
     for (var d = 1; d <= now.day; d++) {
       if (isDone(d)) doneCount++;
     }
 
-    // Warna angka di dalam kotak: gelap jika latarnya terang
-    final doneTextColor =
-        color.computeLuminance() > 0.4 ? AppColors.text : Colors.white;
+    final doneTextColor = color.computeLuminance() > 0.4
+        ? AppColors.text
+        : Colors.white;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        if (habit.description.trim().isNotEmpty) ...[
+          Text(
+            habit.description,
+            style: const TextStyle(
+              fontSize: 14,
+              height: 1.5,
+              color: AppColors.muted,
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+
         if (habit.useTimer) ...[
           TimerWidget(habit: habit),
           const SizedBox(height: 24),
         ],
+
         Row(
           children: [
             Expanded(
@@ -117,9 +138,9 @@ class HabitDetailContent extends StatelessWidget {
             ),
           ],
         ),
+
         const SizedBox(height: 24),
 
-        // Judul bulan + jumlah hari selesai
         Wrap(
           alignment: WrapAlignment.spaceBetween,
           crossAxisAlignment: WrapCrossAlignment.center,
@@ -127,8 +148,7 @@ class HabitDetailContent extends StatelessWidget {
           children: [
             Text(
               '${monthNames[now.month - 1]} ${now.year}',
-              style: const TextStyle(
-                  fontWeight: FontWeight.w600, fontSize: 16),
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
             ),
             Text(
               '$doneCount/${now.day} hari',
@@ -136,9 +156,9 @@ class HabitDetailContent extends StatelessWidget {
             ),
           ],
         ),
+
         const SizedBox(height: 12),
 
-        // Baris nama hari
         Row(
           children: [
             for (final name in dayNames)
@@ -148,15 +168,17 @@ class HabitDetailContent extends StatelessWidget {
                     name,
                     textScaler: TextScaler.noScaling,
                     style: const TextStyle(
-                        fontSize: 11, color: AppColors.muted),
+                      fontSize: 11,
+                      color: AppColors.muted,
+                    ),
                   ),
                 ),
               ),
           ],
         ),
+
         const SizedBox(height: 6),
 
-        // Kalender: kotak kosong (offset) lalu satu kotak per hari
         GridView.count(
           crossAxisCount: 7,
           shrinkWrap: true,
@@ -165,14 +187,15 @@ class HabitDetailContent extends StatelessWidget {
           crossAxisSpacing: 6,
           children: [
             for (var i = 0; i < offset; i++) const SizedBox.shrink(),
+
             for (var d = 1; d <= totalDays; d++)
               Container(
                 decoration: BoxDecoration(
                   color: d > now.day
-                      ? const Color(0xFFEEF3EA) // belum tiba
+                      ? const Color(0xFFEEF3EA)
                       : isDone(d)
-                          ? color // selesai
-                          : const Color(0xFFDDE7D8), // terlewat
+                      ? color
+                      : const Color(0xFFDDE7D8),
                   borderRadius: BorderRadius.circular(8),
                   border: d == now.day
                       ? Border.all(color: AppColors.text, width: 2)
@@ -187,8 +210,8 @@ class HabitDetailContent extends StatelessWidget {
                     color: d > now.day
                         ? AppColors.muted
                         : isDone(d)
-                            ? doneTextColor
-                            : AppColors.text,
+                        ? doneTextColor
+                        : AppColors.text,
                   ),
                 ),
               ),
@@ -203,6 +226,7 @@ class _StatCard extends StatelessWidget {
   final String label;
   final String value;
   final Color valueColor;
+
   const _StatCard({
     required this.label,
     required this.value,
@@ -217,16 +241,21 @@ class _StatCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label,
-                style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+            Text(
+              label,
+              style: const TextStyle(fontSize: 12, color: AppColors.muted),
+            ),
             const SizedBox(height: 4),
             FittedBox(
               fit: BoxFit.scaleDown,
-              child: Text(value,
-                  style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: valueColor)),
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: valueColor,
+                ),
+              ),
             ),
           ],
         ),

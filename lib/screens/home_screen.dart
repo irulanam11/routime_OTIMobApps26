@@ -75,7 +75,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Panel detail untuk tampilan tablet atau layar lebar.
   Widget _buildDetailPane(BuildContext context, Habit? selected) {
     if (selected == null) {
       return const Center(
@@ -103,6 +102,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: AppColors.text,
                     ),
                   ),
+                ),
+                IconButton(
+                  tooltip: 'Edit kebiasaan',
+                  icon: const Icon(Icons.edit_outlined),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => HabitFormScreen(habit: selected),
+                      ),
+                    );
+                  },
                 ),
                 IconButton(
                   tooltip: 'Hapus kebiasaan',
@@ -135,7 +146,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Halaman utama: sapaan, progress, dan daftar Habit.
   Widget _buildList(
     BuildContext context,
     HabitProvider provider,
@@ -160,7 +170,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
         const SizedBox(height: 24),
 
-        // Kartu progress harian.
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
@@ -206,7 +215,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
         const SizedBox(height: 20),
 
-        // Daftar Habit.
         Expanded(
           child: habits.isEmpty
               ? const Center(
@@ -284,7 +292,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             child: Row(
                               children: [
-                                // Penanda warna Habit.
                                 Container(
                                   width: 20,
                                   height: 20,
@@ -296,7 +303,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                 const SizedBox(width: 18),
 
-                                // Nama dan streak Habit.
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -326,7 +332,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
                                 const SizedBox(width: 12),
 
-                                // Tombol tandai selesai.
                                 IconButton(
                                   tooltip: isDone
                                       ? 'Batalkan penyelesaian'

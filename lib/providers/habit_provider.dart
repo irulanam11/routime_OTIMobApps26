@@ -1,5 +1,7 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
+
 import '../models/habit.dart';
 import '../services/storage_service.dart';
 import '../utils/date_utils.dart';
@@ -13,30 +15,16 @@ class HabitProvider extends ChangeNotifier {
 
   int get doneToday => _habits.where(isDoneToday).length;
 
-  /// Memuat data Habit dari penyimpanan.
   Future<void> load() async {
-    // Mencegah data terduplikasi jika load dipanggil kembali.
     _habits.clear();
 
     final stored = await _storage.loadHabits();
 
     if (stored == null) {
       _habits.addAll([
-        Habit(
-          id: '1',
-          name: 'Minum 8 gelas air',
-          colorValue: 0xFF2F7D4F,
-        ),
-        Habit(
-          id: '2',
-          name: 'Baca 15 menit',
-          colorValue: 0xFF4A7FB5,
-        ),
-        Habit(
-          id: '3',
-          name: 'Belajar Flutter',
-          colorValue: 0xFFF2A83B,
-        ),
+        Habit(id: '1', name: 'Minum 8 gelas air', colorValue: 0xFF2F7D4F),
+        Habit(id: '2', name: 'Baca 15 menit', colorValue: 0xFF4A7FB5),
+        Habit(id: '3', name: 'Belajar Flutter', colorValue: 0xFFF2A83B),
       ]);
 
       await _storage.saveHabits(_habits);
@@ -47,15 +35,14 @@ class HabitProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Menambahkan Habit baru.
   void addHabit(
     String name, {
+    String description = '',
     int colorValue = 0xFF2F7D4F,
     bool useTimer = false,
   }) {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
 
-    // Memastikan ID tidak sama dengan Habit yang sudah ada.
     var id = timestamp.toString();
 
     while (_habits.any((habit) => habit.id == id)) {
@@ -66,6 +53,7 @@ class HabitProvider extends ChangeNotifier {
       Habit(
         id: id,
         name: name.trim(),
+        description: description.trim(),
         colorValue: colorValue,
         useTimer: useTimer,
       ),
@@ -74,7 +62,35 @@ class HabitProvider extends ChangeNotifier {
     _commit();
   }
 
-  /// Mengubah status penyelesaian Habit hari ini.
+  Future<void> updateHabit({
+    required String id,
+    required String name,
+    required String description,
+    required int colorValue,
+    required bool useTimer,
+    TimerProvider? timerProvider,
+  }) async {
+    final index = _habits.indexWhere((habit) => habit.id == id);
+
+    if (index == -1) return;
+
+    if (!useTimer &&
+        timerProvider != null &&
+        timerProvider.hasTimer &&
+        timerProvider.habitId == id) {
+      await timerProvider.clear();
+    }
+
+    final habit = _habits[index];
+
+    habit.name = name.trim();
+    habit.description = description.trim();
+    habit.colorValue = colorValue;
+    habit.useTimer = useTimer;
+
+    _commit();
+  }
+
   void toggleToday(String id) {
     final index = _habits.indexWhere((habit) => habit.id == id);
 
@@ -92,11 +108,7 @@ class HabitProvider extends ChangeNotifier {
     _commit();
   }
 
-  /// Menghapus Habit dan Timer yang dimilikinya.
-  Future<void> deleteHabit(
-    String id,
-    TimerProvider timerProvider,
-  ) async {
+  Future<void> deleteHabit(String id, TimerProvider timerProvider) async {
     final timerOwnerExists = _habits.any(
       (habit) => habit.id == timerProvider.habitId,
     );
@@ -113,7 +125,6 @@ class HabitProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Menyimpan perubahan Habit.
   void _commit() {
     unawaited(_storage.saveHabits(_habits));
     notifyListeners();
