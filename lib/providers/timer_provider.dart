@@ -1,4 +1,3 @@
-
 import 'dart:async';
 import 'dart:convert';
 
@@ -19,8 +18,7 @@ abstract class TimerNotificationService {
   });
 }
 
-class LocalTimerNotificationService
-    implements TimerNotificationService {
+class LocalTimerNotificationService implements TimerNotificationService {
   @override
   Future<void> cancelTimerNotifications() {
     return NotificationService.cancelTimerNotifications();
@@ -44,28 +42,18 @@ class LocalTimerNotificationService
   }
 }
 
-enum TimerMode {
-  countdown,
-  stopwatch,
-  pomodoro,
-}
+enum TimerMode { countdown, stopwatch, pomodoro }
 
-enum PomodoroPhase {
-  focus,
-  shortBreak,
-  longBreak,
-  completed,
-}
+enum PomodoroPhase { focus, shortBreak, longBreak, completed }
 
 class TimerProvider extends ChangeNotifier {
   static const String _storageKey = 'routime_timer';
 
   final TimerNotificationService _notificationService;
 
-  TimerProvider({
-    TimerNotificationService? notificationService,
-  }) : _notificationService =
-            notificationService ?? LocalTimerNotificationService();
+  TimerProvider({TimerNotificationService? notificationService})
+    : _notificationService =
+          notificationService ?? LocalTimerNotificationService();
 
   Timer? _ticker;
 
@@ -106,14 +94,8 @@ class TimerProvider extends ChangeNotifier {
   int get focusMinutes => _focusMinutes;
   int get shortBreakMinutes => _shortBreakMinutes;
   int get longBreakMinutes => _longBreakMinutes;
-  int get sessionsBeforeLongBreak =>
-      _sessionsBeforeLongBreak;
-  int get completedFocusSessions =>
-      _completedFocusSessions;
-  // Memastikan Timer baru hanya dimulai jika:
-  // 1. Tidak ada Timer yang sedang berjalan.
-  // 2. Tidak ada Timer sebelumnya, atau Timer sebelumnya
-  //    dimiliki oleh Habit yang sama.
+  int get sessionsBeforeLongBreak => _sessionsBeforeLongBreak;
+  int get completedFocusSessions => _completedFocusSessions;
   bool _canStartForHabit(String habitId) {
     if (_isRunning) return false;
 
@@ -123,6 +105,7 @@ class TimerProvider extends ChangeNotifier {
 
     return true;
   }
+
   // Menjadwalkan notifikasi sesuai mode Timer.
   Future<void> _scheduleTimerNotifications() async {
     await _notificationService.cancelTimerNotifications();
@@ -141,9 +124,7 @@ class TimerProvider extends ChangeNotifier {
         id: 1000,
         title: 'Timer Selesai!',
         body: 'Waktu untuk habit kamu sudah selesai.',
-        scheduledTime: now.add(
-          Duration(milliseconds: remaining),
-        ),
+        scheduledTime: now.add(Duration(milliseconds: remaining)),
         payload: _habitId,
       );
 
@@ -166,9 +147,7 @@ class TimerProvider extends ChangeNotifier {
           notificationIndex < 400) {
         if (duration <= 0) break;
 
-        scheduledTime = scheduledTime.add(
-          Duration(milliseconds: duration),
-        );
+        scheduledTime = scheduledTime.add(Duration(milliseconds: duration));
 
         String title;
         String body;
@@ -176,8 +155,7 @@ class TimerProvider extends ChangeNotifier {
         if (currentPhase == PomodoroPhase.focus) {
           completedSessions++;
 
-          if (completedSessions >=
-              _sessionsBeforeLongBreak) {
+          if (completedSessions >= _sessionsBeforeLongBreak) {
             currentPhase = PomodoroPhase.longBreak;
             duration = _longBreakMinutes * 60 * 1000;
 
@@ -192,13 +170,11 @@ class TimerProvider extends ChangeNotifier {
           }
         } else {
           if (currentPhase == PomodoroPhase.longBreak &&
-              completedSessions >=
-                  _sessionsBeforeLongBreak) {
+              completedSessions >= _sessionsBeforeLongBreak) {
             currentPhase = PomodoroPhase.completed;
 
             title = 'Pomodoro Selesai!';
-            body =
-                'Semua sesi Pomodoro berhasil diselesaikan.';
+            body = 'Semua sesi Pomodoro berhasil diselesaikan.';
           } else {
             currentPhase = PomodoroPhase.focus;
             duration = _focusMinutes * 60 * 1000;
@@ -226,9 +202,7 @@ class TimerProvider extends ChangeNotifier {
     if (_mode == TimerMode.stopwatch) return 0;
 
     if (_isRunning && _startedAtMs != null) {
-      final elapsed =
-          DateTime.now().millisecondsSinceEpoch -
-              _startedAtMs!;
+      final elapsed = DateTime.now().millisecondsSinceEpoch - _startedAtMs!;
 
       return (_remainingMs - elapsed).clamp(0, 1 << 62);
     }
@@ -236,14 +210,14 @@ class TimerProvider extends ChangeNotifier {
     return _remainingMs;
   }
 
+  int get countdownDurationMs => _countdownDurationMs;
+
   // Menghitung waktu Stopwatch.
   int get elapsedMs {
     if (_mode != TimerMode.stopwatch) return 0;
 
     if (_isRunning && _startedAtMs != null) {
-      final elapsed =
-          DateTime.now().millisecondsSinceEpoch -
-              _startedAtMs!;
+      final elapsed = DateTime.now().millisecondsSinceEpoch - _startedAtMs!;
 
       return _elapsedMs + elapsed;
     }
@@ -283,9 +257,7 @@ class TimerProvider extends ChangeNotifier {
           ? null
           : TimerMode.values.byName(data['mode']);
 
-      _phase = PomodoroPhase.values.byName(
-        data['phase'] ?? 'focus',
-      );
+      _phase = PomodoroPhase.values.byName(data['phase'] ?? 'focus');
 
       _habitId = data['habitId'];
       _isRunning = data['isRunning'] ?? false;
@@ -294,24 +266,18 @@ class TimerProvider extends ChangeNotifier {
 
       _countdownDurationMs =
           data['countdownDurationMs'] ??
-              (_mode == TimerMode.countdown
-                  ? _remainingMs
-                  : 0);
+          (_mode == TimerMode.countdown ? _remainingMs : 0);
 
       _elapsedMs = data['elapsedMs'] ?? 0;
       _startedAtMs = data['startedAtMs'];
 
       _focusMinutes = data['focusMinutes'] ?? 25;
-      _shortBreakMinutes =
-          data['shortBreakMinutes'] ?? 5;
-      _longBreakMinutes =
-          data['longBreakMinutes'] ?? 15;
+      _shortBreakMinutes = data['shortBreakMinutes'] ?? 5;
+      _longBreakMinutes = data['longBreakMinutes'] ?? 15;
 
-      _sessionsBeforeLongBreak =
-          data['sessionsBeforeLongBreak'] ?? 4;
+      _sessionsBeforeLongBreak = data['sessionsBeforeLongBreak'] ?? 4;
 
-      _completedFocusSessions =
-          data['completedFocusSessions'] ?? 0;
+      _completedFocusSessions = data['completedFocusSessions'] ?? 0;
 
       _syncTime();
 
@@ -334,8 +300,8 @@ class TimerProvider extends ChangeNotifier {
     required int durationMinutes,
   }) async {
     if (!_canStartForHabit(habitId) || durationMinutes <= 0) {
-        return;
-      }
+      return;
+    }
 
     _stopTicker();
 
@@ -351,9 +317,7 @@ class TimerProvider extends ChangeNotifier {
   }
 
   // Memulai Stopwatch.
-  Future<void> startStopwatch({
-    required String habitId,
-  }) async {
+  Future<void> startStopwatch({required String habitId}) async {
     if (!_canStartForHabit(habitId)) return;
 
     _stopTicker();
@@ -378,12 +342,12 @@ class TimerProvider extends ChangeNotifier {
     int sessionsBeforeLongBreak = 4,
   }) async {
     if (!_canStartForHabit(habitId) ||
-      focusMinutes <= 0 ||
-      shortBreakMinutes <= 0 ||
-      longBreakMinutes <= 0 ||
-      sessionsBeforeLongBreak <= 0) {
-    return;
-  }
+        focusMinutes <= 0 ||
+        shortBreakMinutes <= 0 ||
+        longBreakMinutes <= 0 ||
+        sessionsBeforeLongBreak <= 0) {
+      return;
+    }
 
     _stopTicker();
 
@@ -410,8 +374,7 @@ class TimerProvider extends ChangeNotifier {
   // Memulai atau melanjutkan Timer.
   Future<void> _startRunning() async {
     _isRunning = true;
-    _startedAtMs =
-        DateTime.now().millisecondsSinceEpoch;
+    _startedAtMs = DateTime.now().millisecondsSinceEpoch;
 
     _startTicker();
 
@@ -435,8 +398,7 @@ class TimerProvider extends ChangeNotifier {
       if (_mode == TimerMode.stopwatch) {
         _elapsedMs += elapsed;
       } else {
-        _remainingMs =
-            (_remainingMs - elapsed).clamp(0, 1 << 62);
+        _remainingMs = (_remainingMs - elapsed).clamp(0, 1 << 62);
       }
     }
 
@@ -455,13 +417,11 @@ class TimerProvider extends ChangeNotifier {
   Future<void> resume() async {
     if (_isRunning || _mode == null) return;
 
-    if (_mode == TimerMode.countdown &&
-        _remainingMs <= 0) {
+    if (_mode == TimerMode.countdown && _remainingMs <= 0) {
       return;
     }
 
-    if (_mode == TimerMode.pomodoro &&
-        _phase == PomodoroPhase.completed) {
+    if (_mode == TimerMode.pomodoro && _phase == PomodoroPhase.completed) {
       return;
     }
 
@@ -527,13 +487,10 @@ class TimerProvider extends ChangeNotifier {
   void _startTicker() {
     _stopTicker();
 
-    _ticker = Timer.periodic(
-      const Duration(seconds: 1),
-      (_) {
-        _syncTime();
-        notifyListeners();
-      },
-    );
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+      _syncTime();
+      notifyListeners();
+    });
   }
 
   // Menghentikan ticker.
@@ -544,9 +501,7 @@ class TimerProvider extends ChangeNotifier {
 
   // Memperbarui waktu berdasarkan timestamp.
   void _syncTime() {
-    if (!_isRunning ||
-        _startedAtMs == null ||
-        _mode == null) {
+    if (!_isRunning || _startedAtMs == null || _mode == null) {
       return;
     }
 
@@ -581,8 +536,7 @@ class TimerProvider extends ChangeNotifier {
 
       _syncPomodoro(now);
 
-      if (previousPhase != _phase ||
-          (wasRunning && !_isRunning)) {
+      if (previousPhase != _phase || (wasRunning && !_isRunning)) {
         _save();
       }
     }
@@ -596,8 +550,7 @@ class TimerProvider extends ChangeNotifier {
       if (_phase == PomodoroPhase.focus) {
         _completedFocusSessions++;
 
-        if (_completedFocusSessions >=
-            _sessionsBeforeLongBreak) {
+        if (_completedFocusSessions >= _sessionsBeforeLongBreak) {
           _phase = PomodoroPhase.longBreak;
           _remainingMs = _longBreakMinutes * 60 * 1000;
         } else {
@@ -606,8 +559,7 @@ class TimerProvider extends ChangeNotifier {
         }
       } else if (_phase == PomodoroPhase.shortBreak ||
           _phase == PomodoroPhase.longBreak) {
-        if (_completedFocusSessions >=
-            _sessionsBeforeLongBreak) {
+        if (_completedFocusSessions >= _sessionsBeforeLongBreak) {
           _phase = PomodoroPhase.completed;
           _remainingMs = 0;
           _isRunning = false;
@@ -646,10 +598,7 @@ class TimerProvider extends ChangeNotifier {
       'completedFocusSessions': _completedFocusSessions,
     };
 
-    await prefs.setString(
-      _storageKey,
-      jsonEncode(data),
-    );
+    await prefs.setString(_storageKey, jsonEncode(data));
   }
 
   // Dipanggil ketika aplikasi kembali aktif.
