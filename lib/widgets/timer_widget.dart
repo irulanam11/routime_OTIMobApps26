@@ -1,11 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
-
 import '../models/habit.dart';
 import '../providers/timer_provider.dart';
 import '../theme/app_theme.dart';
 import 'timer_input_dialog.dart';
 import 'timer_progress_ring.dart';
+import '../services/notification_service.dart';
 
 class TimerWidget extends StatelessWidget {
   final Habit habit;
@@ -28,6 +28,9 @@ class TimerWidget extends StatelessWidget {
     );
 
     if (result == null || !context.mounted) return;
+
+    await NotificationService.ensureExactAlarmPermission();
+    if (!context.mounted) return;
 
     await provider.startCountdown(
       habitId: habit.id,
@@ -61,6 +64,9 @@ class TimerWidget extends StatelessWidget {
     );
 
     if (result == null || !context.mounted) return;
+
+    await NotificationService.ensureExactAlarmPermission();
+    if (!context.mounted) return;
 
     await provider.startPomodoro(
       habitId: habit.id,

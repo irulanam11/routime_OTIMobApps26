@@ -108,21 +108,26 @@ class HabitProvider extends ChangeNotifier {
     _commit();
   }
 
-  Future<void> deleteHabit(String id, TimerProvider timerProvider) async {
+  /// Menghapus Habit dan Timer yang dimilikinya.
+  Future<void> deleteHabit(
+    String id,
+    TimerProvider timerProvider,
+  ) async {
     final timerOwnerExists = _habits.any(
       (habit) => habit.id == timerProvider.habitId,
     );
 
-    if (timerProvider.hasTimer &&
-        (timerProvider.habitId == id || !timerOwnerExists)) {
+    final shouldClearTimer = timerProvider.hasTimer &&
+        (timerProvider.habitId == id || !timerOwnerExists);
+
+    _habits.removeWhere((habit) => habit.id == id);
+    notifyListeners();
+
+    if (shouldClearTimer) {
       await timerProvider.clear();
     }
 
-    _habits.removeWhere((habit) => habit.id == id);
-
     await _storage.saveHabits(_habits);
-
-    notifyListeners();
   }
 
   void _commit() {

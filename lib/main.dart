@@ -29,8 +29,34 @@ Future<void> main() async {
   );
 }
 
-class RoutimeApp extends StatelessWidget {
+class RoutimeApp extends StatefulWidget {
   const RoutimeApp({super.key});
+
+  @override
+  State<RoutimeApp> createState() => _RoutimeAppState();
+}
+
+// Mengamati siklus hidup aplikasi: saat aplikasi kembali ke layar,
+// Timer disinkronkan ulang agar tampilan langsung akurat.
+class _RoutimeAppState extends State<RoutimeApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      context.read<TimerProvider>().refresh();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
