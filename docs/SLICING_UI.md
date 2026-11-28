@@ -35,7 +35,7 @@
 
 ### Splash Screen
 
-![Splash](images/splash_screen.jpg)
+<img src="images/splash_screen.jpg" width="300">
 
 | No | Elemen | Fungsi |
 |---|---|---|
@@ -50,7 +50,7 @@ Animasi: logo muncul dengan efek fade + zoom kecil. Layar tampil minimal 1,8 det
 
 ## 2. Halaman Home / Hari Ini
 
-![Home](images/home.jpg)
+<img src="images/home.jpg" width="300">
 
 | No | Elemen | Fungsi |
 |---|---|---|
@@ -77,7 +77,7 @@ Animasi: logo muncul dengan efek fade + zoom kecil. Layar tampil minimal 1,8 det
 
 ### Dialog Konfirmasi Hapus
 
-![Dialog hapus](images/dialog_hapus.jpg)
+<img src="images/dialog_hapus.jpg" width="300">
 
 Judul "Hapus kebiasaan?", isi `"<nama>" dan riwayatnya akan dihapus.`, tombol **Batal** (tutup tanpa hapus) dan **Hapus** (hapus habit beserta riwayat dan timer miliknya).
 
@@ -92,7 +92,7 @@ Satu layar form yang sama dipakai untuk dua mode.
 | Tambah | Kebiasaan Baru | Simpan | FAB (+) di Home |
 | Edit | Edit Kebiasaan | Simpan Perubahan | Ikon pensil di Detail Habit |
 
-![Form tambah](images/form_tambah_habit.jpg) ![Form edit](images/form_edit.jpg)
+<img src="images/form_tambah_habit.jpg" width="300"> <img src="images/form_edit.jpg" width="300">
 
 | No | Elemen | Fungsi |
 |---|---|---|
@@ -107,7 +107,7 @@ Satu layar form yang sama dipakai untuk dua mode.
 
 ## 4. Halaman Detail Habit
 
-![Detail habit](images/detail_habit.jpg) ![Detail habit dengan timer](images/detail_timer.jpg)
+<img src="images/detail_habit.jpg" width="300"> <img src="images/detail_timer.jpg" width="300">
 
 | No | Elemen | Fungsi |
 |---|---|---|
@@ -136,7 +136,7 @@ Satu layar form yang sama dipakai untuk dua mode.
 
 Timer muncul di bagian atas Detail Habit, hanya untuk habit dengan opsi timer aktif.
 
-![Countdown](images/timer_countdown.jpg) ![Stopwatch](images/timer_stopwatch.jpg) ![Pomodoro](images/timer_pomodoro.jpg)
+!<img src="images/timer_countdown.jpg" width="300"> <img src="images/timer_stopwatch.jpg" width="300"> <img src="images/timer_pomodoro.jpg" width="300">
 
 ### Elemen kartu Timer
 
@@ -163,7 +163,7 @@ Timer muncul di bagian atas Detail Habit, hanya untuk habit dengan opsi timer ak
 
 ### Dialog pengaturan
 
-![Dialog pengaturan Pomodoro](images/form_timer.jpg)
+<img src="images/form_timer.jpg" width="300">
 
 | Dialog | Isian (bawaan) |
 |---|---|
@@ -192,7 +192,7 @@ Jika habit lain sedang memakai timer, kartu hanya menampilkan ikon jam bergembok
 
 ## 6. Halaman Statistik
 
-![Statistik bagian atas](images/statistik_atas.jpg) ![Statistik bagian bawah](images/statistik_bawah.jpg)
+<img src="atistik_atas.jpg" width="300"> <img src="images/statistik_bawah.jpg" width="300">
 
 Jika belum ada kebiasaan, halaman menampilkan ikon grafik, judul **"Belum ada data Statistik"**, dan ajakan menambah kebiasaan dulu.
 
