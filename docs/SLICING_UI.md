@@ -192,7 +192,7 @@ Jika habit lain sedang memakai timer, kartu hanya menampilkan ikon jam bergembok
 
 ## 6. Halaman Statistik
 
-<img src="atistik_atas.jpg" width="300"> <img src="images/statistik_bawah.jpg" width="300">
+<img src="images/statistik_atas.jpg" width="300"> <img src="images/statistik_bawah.jpg" width="300">
 
 Jika belum ada kebiasaan, halaman menampilkan ikon grafik, judul **"Belum ada data Statistik"**, dan ajakan menambah kebiasaan dulu.
 
