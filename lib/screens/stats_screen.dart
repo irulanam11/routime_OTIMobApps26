@@ -5,6 +5,7 @@ import '../models/habit.dart';
 import '../providers/habit_provider.dart';
 import '../theme/app_theme.dart';
 import '../utils/date_utils.dart';
+import '../utils/stats_utils.dart';
 
 class StatsScreen extends StatefulWidget {
   const StatsScreen({super.key});
@@ -16,57 +17,6 @@ class StatsScreen extends StatefulWidget {
 class _StatsScreenState extends State<StatsScreen> {
   DateTime _selectedMonth = DateTime.now();
   DateTime _selectedDate = DateTime.now();
-
-  int _completedOnDate(List<Habit> habits, DateTime date) {
-    final key = dateKey(date);
-
-    return habits.where((habit) => habit.doneDates.contains(key)).length;
-  }
-
-  int _completedInMonth(Habit habit, DateTime month) {
-    return habit.doneDates.where((key) {
-      final date = DateTime.tryParse(key);
-
-      return date != null &&
-          date.year == month.year &&
-          date.month == month.month;
-    }).length;
-  }
-
-  int _totalCompleted(List<Habit> habits, DateTime month) {
-    return habits.fold<int>(
-      0,
-      (total, habit) => total + _completedInMonth(habit, month),
-    );
-  }
-
-  int _activeDays(List<Habit> habits, DateTime month) {
-    final activeDates = <String>{};
-
-    for (final habit in habits) {
-      for (final key in habit.doneDates) {
-        final date = DateTime.tryParse(key);
-
-        if (date != null &&
-            date.year == month.year &&
-            date.month == month.month) {
-          activeDates.add(key);
-        }
-      }
-    }
-
-    return activeDates.length;
-  }
-
-  int _daysElapsed(DateTime month) {
-    final now = DateTime.now();
-
-    if (month.year == now.year && month.month == now.month) {
-      return now.day;
-    }
-
-    return DateTime(month.year, month.month + 1, 0).day;
-  }
 
   void _changeMonth(int difference) {
     final now = DateTime.now();
@@ -135,22 +85,9 @@ class _StatsScreenState extends State<StatsScreen> {
       );
     }
 
-    final totalCompleted = _totalCompleted(habits, _selectedMonth);
-    final activeDays = _activeDays(habits, _selectedMonth);
-    final elapsedDays = _daysElapsed(_selectedMonth);
-    final possibleCompletions = habits.length * elapsedDays;
-
-    final completionRate = possibleCompletions == 0
-        ? 0.0
-        : totalCompleted / possibleCompletions;
-
-    final ranking = [...habits]
-      ..sort(
-        (a, b) => _completedInMonth(
-          b,
-          _selectedMonth,
-        ).compareTo(_completedInMonth(a, _selectedMonth)),
-      );
+    // Semua angka dihitung SEKALI per build, lalu dipakai ulang.
+    final stats = MonthStats.compute(habits, _selectedMonth);
+    final ranking = stats.rank(habits);
 
     final selectedCompletedHabits = habits
         .where((habit) => habit.doneDates.contains(dateKey(_selectedDate)))
@@ -185,9 +122,11 @@ class _StatsScreenState extends State<StatsScreen> {
               const SizedBox(height: 24),
 
               // RINGKASAN STATISTIK
-              const Text(
-                'Ringkasan Bulan Ini',
-                style: TextStyle(
+              Text(
+                isCurrentMonth
+                    ? 'Ringkasan Bulan Ini'
+                    : 'Ringkasan ${monthNames[_selectedMonth.month - 1]}',
+                style: const TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                   color: AppColors.text,
@@ -201,7 +140,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     child: _SummaryCard(
                       icon: Icons.trending_up_rounded,
                       title: 'Penyelesaian',
-                      value: '${(completionRate * 100).round()}%',
+                      value: '${(stats.completionRate * 100).round()}%',
                       subtitle: 'Dari target harian',
                     ),
                   ),
@@ -210,7 +149,7 @@ class _StatsScreenState extends State<StatsScreen> {
                     child: _SummaryCard(
                       icon: Icons.calendar_today_rounded,
                       title: 'Hari Aktif',
-                      value: '$activeDays',
+                      value: '${stats.activeDays}',
                       subtitle: 'Hari konsisten',
                     ),
                   ),
@@ -222,7 +161,7 @@ class _StatsScreenState extends State<StatsScreen> {
               _SummaryCard(
                 icon: Icons.check_circle_outline_rounded,
                 title: 'Total Habit Selesai',
-                value: '$totalCompleted',
+                value: '${stats.totalCompleted}',
                 subtitle: 'Penyelesaian selama bulan ini',
                 horizontal: true,
               ),
@@ -306,7 +245,7 @@ class _StatsScreenState extends State<StatsScreen> {
                       const SizedBox(height: 12),
 
                       // TANGGAL KALENDER
-                      _buildCalendarGrid(habits),
+                      _buildCalendarGrid(stats),
 
                       const SizedBox(height: 16),
 
@@ -450,7 +389,7 @@ class _StatsScreenState extends State<StatsScreen> {
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(18),
-                  child: _buildWeeklyChart(habits),
+                  child: _buildWeeklyChart(stats.weekly),
                 ),
               ),
 
@@ -475,8 +414,8 @@ class _StatsScreenState extends State<StatsScreen> {
               for (var i = 0; i < ranking.length; i++)
                 _HabitProgressCard(
                   habit: ranking[i],
-                  completed: _completedInMonth(ranking[i], _selectedMonth),
-                  elapsedDays: elapsedDays,
+                  completed: stats.completedFor(ranking[i]),
+                  elapsedDays: stats.elapsedDays,
                   rank: i + 1,
                 ),
             ],
@@ -487,12 +426,12 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   // MEMBANGUN GRID KALENDER
-  Widget _buildCalendarGrid(List<Habit> habits) {
+  Widget _buildCalendarGrid(MonthStats stats) {
     final year = _selectedMonth.year;
     final month = _selectedMonth.month;
 
     final firstDay = DateTime(year, month, 1);
-    final totalDays = DateTime(year, month + 1, 0).day;
+    final totalDays = daysInMonth(year, month);
 
     // Kalender dimulai dari Senin.
     final leadingDays = firstDay.weekday - 1;
@@ -525,8 +464,7 @@ class _StatsScreenState extends State<StatsScreen> {
           DateTime(today.year, today.month, today.day),
         );
 
-        final completedCount = _completedOnDate(habits, date);
-        final hasCompleted = completedCount > 0;
+        final hasCompleted = stats.completedOn(date) > 0;
 
         return InkWell(
           onTap: isFuture
@@ -582,32 +520,7 @@ class _StatsScreenState extends State<StatsScreen> {
   }
 
   // GRAFIK PENYELESAIAN PER MINGGU
-  Widget _buildWeeklyChart(List<Habit> habits) {
-    final totalDays = DateTime(
-      _selectedMonth.year,
-      _selectedMonth.month + 1,
-      0,
-    ).day;
-
-    final weekCount = (totalDays + 6) ~/ 7;
-    final weeklyData = <int>[];
-
-    for (var week = 0; week < weekCount; week++) {
-      final startDay = week * 7 + 1;
-      final endDay = (startDay + 6).clamp(1, totalDays);
-
-      var count = 0;
-
-      for (var day = startDay; day <= endDay; day++) {
-        count += _completedOnDate(
-          habits,
-          DateTime(_selectedMonth.year, _selectedMonth.month, day),
-        );
-      }
-
-      weeklyData.add(count);
-    }
-
+  Widget _buildWeeklyChart(List<int> weeklyData) {
     final maxValue = weeklyData.fold<int>(
       0,
       (currentMax, value) => value > currentMax ? value : currentMax,
@@ -625,8 +538,7 @@ class _StatsScreenState extends State<StatsScreen> {
             ),
             const SizedBox(width: 8),
             Text(
-              '${weeklyData.fold<int>(0, (a, b) => a + b)} '
-              'penyelesaian',
+              '${weeklyData.fold<int>(0, (a, b) => a + b)} penyelesaian',
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,

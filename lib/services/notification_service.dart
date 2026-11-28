@@ -15,6 +15,8 @@ class NotificationService {
     channelDescription: 'Notifikasi ketika timer selesai atau berganti fase',
     importance: Importance.max,
     priority: Priority.high,
+
+  
   );
 
   static const NotificationDetails _notificationDetails =
@@ -92,20 +94,31 @@ class NotificationService {
     );
   }
 
-  static Future<void> cancelNotification(int id) async {
-    await _notifications.cancel(id: id);
-  }
+    static Future<void> cancelNotification(int id) async {
+      await _notifications.cancel(id: id);
+    }
 
-  static Future<void> cancelAllNotifications() async {
-    await _notifications.cancelAll();
-  }
-  static Future<void> cancelTimerNotifications() async {
-  // ID 1000 untuk Countdown
-  await _notifications.cancel(id: 1000);
+    static Future<void> cancelAllNotifications() async {
+      await _notifications.cancelAll();
+    }
+    static Future<void> cancelTimerNotifications() async {
+    // ID 1000 untuk Countdown
+    await _notifications.cancel(id: 1000);
 
-  // ID 1100–1499 untuk rangkaian Pomodoro
-  for (int id = 1100; id <= 1499; id++) {
-    await _notifications.cancel(id: id);
+    // ID 1100–1499 untuk rangkaian Pomodoro
+    for (int id = 1100; id <= 1499; id++) {
+      await _notifications.cancel(id: id);
+    }
   }
-}
+  static bool _exactAlarmAsked = false;
+
+  /// Meminta izin alarm tepat waktu SEKALI per sesi aplikasi.
+  /// Di Android 12+ pengguna diarahkan ke layar pengaturan sistem.
+  static Future<void> ensureExactAlarmPermission() async {
+    if (_exactAlarmAsked) return;
+    _exactAlarmAsked = true;
+
+    if (await canScheduleExactNotifications()) return;
+    await requestExactAlarmPermission();
+  }
 }
